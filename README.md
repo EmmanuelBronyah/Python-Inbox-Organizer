@@ -2,7 +2,9 @@
 This python inbox organizer is a command-line python program that takes
 as input a valid email address, searches through the mails in the
 inbox folder of the user's gmail account and groups all emails received
-from that email address into a special folder or label.
+from that email address into a special folder or label. You
+must provide your email address and password which the program
+uses to log into your account and perform the automation.
 
 ## Features of the inbox organizer
 1. **Takes email address or addresses to group:** The program takes a 
@@ -44,13 +46,29 @@ python main.py
 ```
 
 ## Usage
-* When you run the program you will be prompted to provide a valid email
-address or email address. If two or more valid email addresses are 
-provided, these email addresses must be separated with a space after
-a comma else an error will be thrown. 
+* When you run the program you will be prompted to provide
+your email address and password. The password will not be
+visible as you type. The program then after prompts 
+you to provide a valid email address or email addresses
+that the emails in the inbox folder is grouped by. 
+If two or more valid email addresses are provided, 
+these email addresses must be separated with a 
+space after a comma else an error will be thrown. 
 
 ## Example 
-1. Providing email addresses.
+1. Providing your email address and password for authentication.
+```shell
+Enter your email address: mike@email.com
+Enter your email password: 
+```
+
+2. When the authentication fails.
+```shell
+Enter the email(s) you want to group: john@email.com, lad@email.com
+Invalid credentials. Authentication failed.
+```
+
+2. Providing email addresses.
 ```shell
 Enter the email(s) you want to group: john@email.com, lad@email.com
 Copying items...
@@ -59,12 +77,12 @@ Copying items...
 Messages from lad@email.com has been copied to Emails_from_lad folder.
 Tracked.
 ```
-2. Providing wrong email addresses.
+3. Providing wrong email addresses.
 ```shell
 Enter the email(s) you want to group: wepfjpme@
 Enter a valid email.
 ```
-3. Providing two valid email addresses not in the specified format.
+4. Providing two valid email addresses not in the specified format.
 ```shell
 Enter the email(s) you want to group: john@email.com,lad@email.com
 List emails in the specified format.
