@@ -1,5 +1,5 @@
-import json
 import imaplib
+import socket
 import sqlite3
 import getpass
 from email import message_from_bytes
@@ -220,6 +220,8 @@ def group_emails(conn, c, emails, email_address, password):
     except imaplib.IMAP4.error as e:
         if "b'[AUTHENTICATIONFAILED] Invalid credentials (Failure)'" in str(e):
             print('Invalid credentials. Authentication failed.')
+    except (socket.gaierror, ConnectionRefusedError, TimeoutError):
+        print('An error occurred. Please make sure you have a stable internet connection.')
 
 
 if __name__ == '__main__':
