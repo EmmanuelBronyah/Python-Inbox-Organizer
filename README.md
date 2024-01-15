@@ -3,14 +3,14 @@ This python inbox organizer is a command-line python program that takes
 as input a valid email address, searches through the mails in the
 inbox folder of the user's gmail account and groups all emails received
 from that email address into a special folder or label. You
-must provide your email address and password which the program
+must provide your email address and an app password which the program
 uses to log into your account and perform the automation.
 
 ## Features of the inbox organizer
 1. **Takes email address or addresses to group:** The program takes a 
 valid email address or addresses and groups all emails received by 
 these addresses. If more than one email address is provided, these 
-email addresses must be separated with a space after a comma else an
+email addresses must be separated with a comma and then a space else an
 error will be thrown. For example: johncane@email.com, sissi@email.com.
 2. **Creates a unique identifier table:** The program creates a uid 
 table where the last processed email message uid is stored. This is to
@@ -47,7 +47,7 @@ python main.py
 
 ## Usage
 * When you run the program you will be prompted to provide
-your email address and password. The password will not be
+your email address and an app password. The password will not be
 visible as you type. The program then after prompts 
 you to provide a valid email address or email addresses
 that the emails in the inbox folder is grouped by. 
@@ -56,7 +56,7 @@ these email addresses must be separated with a
 space after a comma else an error will be thrown. 
 
 ## Example 
-1. Providing your email address and password for authentication.
+1. Providing your email address and app password for authentication.
 ```shell
 Enter your email address: mike@email.com
 Enter your email password: 
