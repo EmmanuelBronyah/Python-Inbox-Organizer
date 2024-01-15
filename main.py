@@ -17,10 +17,10 @@ def main():
     while verified:
         emails = get_email_to_group()
         if emails == -1:
-            print('Enter a valid email.')
+            print("Enter a valid email.")
             break
         elif emails is False:
-            print('List emails in the specified format.')
+            print("List emails in the specified format.")
             break
         conn, c = create_tables()
         group_emails(conn, c, emails, email_address, password)
@@ -33,8 +33,8 @@ def get_credentials():
 
     :return: Returns the email address and password.
     """
-    email_address = input('Enter your email address: ')
-    password = getpass.getpass('Enter your email password: ')
+    email_address = input("Enter your email address: ")
+    password = getpass.getpass("Enter your email password: ")
     return email_address, password
 
 
@@ -46,23 +46,19 @@ def get_email_to_group():
     """
     emails = []
     try:
-        emails_to_group = input('Enter the email(s) you want to group: ').split(', ')
-        if emails_to_group:
-            for email in emails_to_group:
-                if '@' in email:
-                    local_part, domain_part = email.split('@')
-                    if local_part and domain_part:
-                        emails.append({'local_part': local_part,
-                                       'domain_part': domain_part,
-                                       'email': email
-                                       })
-                    else:
-                        return -1
-                else:
-                    return -1
-            return emails
-        else:
+        emails_to_group = input("Enter the email(s) you want to group: ").split(", ")
+        if not emails_to_group:
             return -1
+        for email in emails_to_group:
+            if not "@" in email:
+                return -1
+            local_part, domain_part = email.split("@")
+            if not local_part and domain_part:
+                return -1
+            emails.append(
+                {"local_part": local_part, "domain_part": domain_part, "email": email}
+            )
+        return emails
     except ValueError:
         return False
 
@@ -73,14 +69,16 @@ def create_tables():
 
     :return: Returns a connection and a cursor object to the database.
     """
-    conn = sqlite3.connect('uid.db')
+    conn = sqlite3.connect("uid.db")
     c = conn.cursor()
     with conn:
-        c.execute("""
+        c.execute(
+            """
                     CREATE TABLE IF NOT EXISTS UIDs (
                         uid integer UNIQUE NOT NULL
                     )
-                  """)
+                  """
+        )
     return conn, c
 
 
@@ -95,7 +93,7 @@ def get_uid(uid):
     uid_as_list = uid
     _, _, uid_as_byte = uid_as_list[0].split()
     uid = uid_as_byte[:-1]
-    uid = uid.decode('utf-8')
+    uid = uid.decode("utf-8")
     return uid
 
 
@@ -108,9 +106,9 @@ def create_folder(mail, email):
     address.
     :return: Returns the name of the folder.
     """
-    if '<' in email['email'] or '>' in email['email']:
-        email_name = email['domain_part'].replace('.', '_').replace('>', '_')
-        folder_name = f'Emails_from_{email_name}'
+    if "<" in email["email"] or ">" in email["email"]:
+        email_name = email["domain_part"].replace(".", "_").replace(">", "_")
+        folder_name = f"Emails_from_{email_name}"
         mail.create(folder_name)
         return folder_name
     else:
@@ -131,12 +129,12 @@ def copy_mails(mail, email, list_of_msg_indexes, folder_name):
     address provided by the user.
     :return: Returns True after the process is completed.
     """
-    print('Copying items...')
+    print("Copying items...")
     for num in reversed(list_of_msg_indexes):
-        _, msg_in_bytes = mail.fetch(num, '(RFC822)')
+        _, msg_in_bytes = mail.fetch(num, "(RFC822)")
         msg_in_bytes = msg_in_bytes[0][1]
         msg = message_from_bytes(msg_in_bytes)
-        if msg['From'] == email["email"]:
+        if msg["From"] == email["email"]:
             mail.copy(num, folder_name)
     return True
 
@@ -155,7 +153,7 @@ def tracker(conn, c, mail, number_of_emails, list_of_msg_indexes):
     """
     if number_of_emails == 0:
         last_processed_email = list_of_msg_indexes[-1]
-        _, uid = mail.fetch(last_processed_email, '(UID)')
+        _, uid = mail.fetch(last_processed_email, "(UID)")
         uid = get_uid(uid)
         with conn:
             c.execute("SELECT * FROM UIDs")
@@ -164,7 +162,7 @@ def tracker(conn, c, mail, number_of_emails, list_of_msg_indexes):
             if uid in all_uid:
                 pass
             else:
-                c.execute("INSERT INTO UIDs (uid) VALUES (:uid)", {'uid': uid})
+                c.execute("INSERT INTO UIDs (uid) VALUES (:uid)", {"uid": uid})
         return True
 
 
@@ -180,17 +178,17 @@ def group_emails(conn, c, emails, email_address, password):
     :return: Returns None.
     """
     try:
-        host = 'imap.gmail.com'
+        host = "imap.gmail.com"
         mail = imaplib.IMAP4_SSL(host)
         mail.login(email_address, password)
-        mail.select('Inbox')
+        mail.select("Inbox")
 
         number_of_emails = len(emails)
 
         for email in emails:
             folder_name = create_folder(mail, email)
 
-            typ, msg_index_in_bytes = mail.search(None, 'ALL')
+            typ, msg_index_in_bytes = mail.search(None, "ALL")
             list_of_msg_indexes = msg_index_in_bytes[0].split()
 
             with conn:
@@ -199,30 +197,40 @@ def group_emails(conn, c, emails, email_address, password):
                 if last_processed_uid is None:
                     copied = copy_mails(mail, email, list_of_msg_indexes, folder_name)
                     if copied is True:
-                        print(f'Messages from {email["email"]} has been copied to {folder_name} folder.')
+                        print(
+                            f'Messages from {email["email"]} has been copied to {folder_name} folder.'
+                        )
 
                     number_of_emails -= 1
-                    email_tracker = tracker(conn, c, mail, number_of_emails, list_of_msg_indexes)
+                    email_tracker = tracker(
+                        conn, c, mail, number_of_emails, list_of_msg_indexes
+                    )
                     if email_tracker is True:
-                        print('Tracked.')
+                        print("Tracked.")
                 else:
-                    search_parameter = f'UID {int(last_processed_uid[0]) + 1}:*'
+                    search_parameter = f"UID {int(last_processed_uid[0]) + 1}:*"
                     _, msg_index_in_bytes = mail.search(None, search_parameter)
                     list_of_msg_indexes = msg_index_in_bytes[0].split()
                     copied = copy_mails(mail, email, list_of_msg_indexes, folder_name)
                     if copied is True:
-                        print(f'Messages from {email["email"]} has been copied to {folder_name} folder.')
+                        print(
+                            f'Messages from {email["email"]} has been copied to {folder_name} folder.'
+                        )
 
                     number_of_emails -= 1
-                    email_tracker = tracker(conn, c, mail, number_of_emails, list_of_msg_indexes)
+                    email_tracker = tracker(
+                        conn, c, mail, number_of_emails, list_of_msg_indexes
+                    )
                     if email_tracker is True:
-                        print('Tracked.')
+                        print("Tracked.")
     except imaplib.IMAP4.error as e:
         if "b'[AUTHENTICATIONFAILED] Invalid credentials (Failure)'" in str(e):
-            print('Invalid credentials. Authentication failed.')
+            print("Invalid credentials. Authentication failed.")
     except (socket.gaierror, ConnectionRefusedError, TimeoutError):
-        print('An error occurred. Please make sure you have a stable internet connection.')
+        print(
+            "An error occurred. Please make sure you have a stable internet connection."
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
