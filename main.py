@@ -23,7 +23,16 @@ def main():
             print("List emails in the specified format.")
             break
         conn, c = create_tables()
-        group_emails(conn, c, emails, email_address, password)
+        try:
+            group_emails(conn, c, emails, email_address, password)
+        except imaplib.IMAP4.error as e:
+            if "b'[AUTHENTICATIONFAILED] Invalid credentials (Failure)'" in str(e):
+                print("Invalid credentials. Authentication failed.")
+        except (socket.gaierror, ConnectionRefusedError, TimeoutError):
+            print(
+                "An error occurred. Please make sure you have a stable internet connection."
+            )
+
         verified = False
 
 
@@ -188,7 +197,7 @@ def group_emails(conn, c, emails, email_address, password):
         for email in emails:
             folder_name = create_folder(mail, email)
 
-            typ, msg_index_in_bytes = mail.search(None, "ALL")
+            _, msg_index_in_bytes = mail.search(None, "ALL")
             list_of_msg_indexes = msg_index_in_bytes[0].split()
 
             with conn:
@@ -224,12 +233,9 @@ def group_emails(conn, c, emails, email_address, password):
                     if email_tracker is True:
                         print("Tracked.")
     except imaplib.IMAP4.error as e:
-        if "b'[AUTHENTICATIONFAILED] Invalid credentials (Failure)'" in str(e):
-            print("Invalid credentials. Authentication failed.")
-    except (socket.gaierror, ConnectionRefusedError, TimeoutError):
-        print(
-            "An error occurred. Please make sure you have a stable internet connection."
-        )
+        raise imaplib.IMAP4.error from e
+    except (socket.gaierror, ConnectionRefusedError, TimeoutError) as e:
+        raise e
 
 
 if __name__ == "__main__":
